@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente WebSocket</title>
+</head>
+<body>
+    <div id="mensajes" style="border: 1px solid black; height: 200px; overflow-y: scroll;"></div>
+    <input id="ip" type="text" placeholder="Introduce la IP del servidor"> <!-- Campo para la IP -->
+    <input id="mensaje" type="text" placeholder="Escribe tu mensaje">
+    <button id="botón" onclick="enviarMensaje()">Enviar mensaje</button>
+    <script>
+        const mensajesDiv = document.getElementById("mensajes");
+        let socket;  // Variable para almacenar el WebSocket
+
+        document.getElementById("ip").addEventListener("change", function() {
+            const entrada = this.value;  // Obtener IP del input
+            socket = new WebSocket(`ws://${entrada}:5555`); // Cambiar la URL si es necesario
+
+            socket.onopen = function() {
+                console.log('Conectado al servidor WebSocket');
+            };
+
+            socket.onmessage = function(event) {
+                mostrarMensaje(event.data);
+            };
+
+            socket.onerror = function(error) {
+                console.log(`Error: ${error}`);
+            };
+
+            socket.onclose = function() {
+                console.log('Conexión cerrada');
+            };
+        });
+
+        function enviarMensaje() {
+            let nombreUsuario = prompt("Introduce tu nombre de usuario favorito:");
+            const mensajeInput = document.getElementById("mensaje");
+            const mensaje = `${nombreUsuario}: ${mensajeInput.value}`; // Añadir el nombre de usuario al mensaje
+            if (mensajeInput.value && socket) {
+                socket.send(mensaje); // Enviar el mensaje al servidor
+                mensajeInput.value = ""; // Limpiar el input
+            }
+        }
+
+        function mostrarMensaje(mensaje) {
+            const p = document.createElement("p");
+            p.textContent = mensaje;
+            mensajesDiv.appendChild(p);
+            mensajesDiv.scrollTop = mensajesDiv.scrollHeight; // Desplazarse hacia abajo
+        }
+    </script>
+</body>
+</html>
